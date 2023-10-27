@@ -3,7 +3,7 @@ import psycopg2
 # Connect to the PostgreSQL database
 conn = psycopg2.connect(host="localhost", dbname="Final Project COP4710", user = "postgres", password="5822",port=5432)
 
-
+# interface menu options
 def display_menu():
     print("T6 Electronics - Enterprise Information System")
     print("1. View Products")
@@ -13,14 +13,15 @@ def display_menu():
     # Add more options for other functionalities
     print("0. Exit")
 
-
-def retrieve_products():
+# get all products
+def retrieve_products(): 
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM product")
     products = cursor.fetchall()
     cursor.close()
     return products
 
+# get all customers
 def retrieve_customers():
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM customer")
@@ -28,6 +29,7 @@ def retrieve_customers():
     cursor.close()
     return customers
 
+#get all employees
 def retreive_employees():
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM employee")
@@ -35,6 +37,7 @@ def retreive_employees():
     cursor.close()
     return employees    
 
+#Place order 
 def place_order(customer_id, employee_id, date, total_amount):
     cursor = conn.cursor()
     cursor.execute("INSERT INTO Orders (CustomerID, EmployeeID, Date, TotalAmount) VALUES (%s, %s, %s, %s)", (customer_id, employee_id, date, total_amount))
@@ -61,7 +64,7 @@ while True:
         result = place_order(customer_id, employee_id, date, total_amount)
         print(result)
     elif choice == "4":
-        # Gather input for placing an order
+        # Display employees
         employees = retreive_employees()    
     # Add more options and queries handling
     elif choice == "0":
