@@ -1,73 +1,118 @@
 import psycopg2
 
 # Connect to the PostgreSQL database
-conn = psycopg2.connect(host="localhost", dbname="Final Project COP4710", user = "postgres", password="5822",port=5432)
+def connect_to_database():
+    try:
+        conn = psycopg2.connect(
+            host="localhost",dbname="Final Project COP4710",user = "postgres",password="5822",port=5432
+            )
+        
+        return conn
+    
+    except Exception as e:
+        print("Error:", e)
+        return None
 
 # interface menu options
 def display_menu():
-    print("T6 Electronics - Enterprise Information System")
+    print("\n------ T6 Electronics ------")
     print("1. View Products")
     print("2. View Customers")
-    print("3. Place an Order")
-    print("4. View Employees")
-    # Add more options for other functionalities
+    print("3. View Orders")
+    print("4. View Carts")
+    print("5. View Providers")
+    print("6. View Employees")
+    print("7. Place Order")
     print("0. Exit")
+    print("-------------------")
 
 # get all products
-def retrieve_products(): 
+def view_products(conn):
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM product")
+    cursor.execute("SELECT * FROM Product")
     products = cursor.fetchall()
     cursor.close()
-    return products
+    for product in products:
+        print(product)
 
 # get all customers
-def retrieve_customers():
+def view_customers(conn):
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM customer")
+    cursor.execute("SELECT * FROM Customer")
     customers = cursor.fetchall()
     cursor.close()
-    return customers
+    for customer in customers:
+        print(customer)
 
-#get all employees
-def retreive_employees():
+# get all orders
+def view_orders(conn):
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM employee")
+    cursor.execute("SELECT * FROM Order")
+    orders = cursor.fetchall()
+    cursor.close()
+    for order in orders:
+        print(order)
+
+def view_carts(conn):
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM Cart")
+    carts = cursor.fetchall()
+    cursor.close()
+    for cart in carts:
+        print(cart)
+
+def view_providers(conn):
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM Provider")
+    providers = cursor.fetchall()
+    cursor.close()
+    for provider in providers:
+        print(provider)                
+
+# Get all employees
+def view_employees(conn):
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM Employee")
     employees = cursor.fetchall()
     cursor.close()
-    return employees    
+    for employee in employees:
+        print(employee)    
 
 #Place order 
-def place_order(customer_id, employee_id, date, total_amount):
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO Orders (CustomerID, EmployeeID, Date, TotalAmount) VALUES (%s, %s, %s, %s)", (customer_id, employee_id, date, total_amount))
-    conn.commit()
-    cursor.close()
-    return "Order placed successfully."
+def place_order(conn):
+    customer_id = input("Enter Customer ID: ")
+    product_id = input("Enter Product ID: ")
+    quantity = int(input("Enter Quantity: "))
 
-while True:
-    display_menu()
-    choice = input("Enter your choice: ")
+def main():
+    conn = connect_to_database()
 
-    if choice == "1":
-        products = retrieve_products()
-        # Display products
-    elif choice == "2":
-        customers = retrieve_customers()
-        # Display customers
-    elif choice == "3":
-        # Gather input for placing an order
-        customer_id = int(input("Enter Customer ID: "))
-        employee_id = int(input("Enter Employee ID: "))
-        date = input("Enter Order Date (YYYY-MM-DD): ")
-        total_amount = float(input("Enter Total Amount: "))
-        result = place_order(customer_id, employee_id, date, total_amount)
-        print(result)
-    elif choice == "4":
-        # Display employees
-        employees = retreive_employees()    
-    # Add more options and queries handling
-    elif choice == "0":
-        break
-    else:
-        print("Invalid choice. Please try again.")
+    if conn:
+        while True:
+            display_menu()
+            choice = input("Enter your choice (0 to exit): ")
+
+            if choice == "0":
+                break
+            elif choice == "1":
+                view_products(conn)
+            elif choice == "2":
+                view_customers(conn)
+            elif choice == "3":
+                view_orders(conn)
+            elif choice == "4":
+                view_carts(conn)
+            elif choice == "5":
+                view_providers(conn)
+            elif choice == "6":
+                view_employees(conn)
+            elif choice == "7":
+                place_order(conn)    
+            else:
+                print("Invalid choice. Please try again.")
+
+        conn.close()
+        print("Goodbye!")
+
+if __name__ == "__main__":
+    main()
