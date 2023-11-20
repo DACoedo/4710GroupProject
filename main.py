@@ -1,4 +1,5 @@
 import psycopg2
+from datetime import datetime
 
 # Connect to the PostgreSQL database
 def connect_to_database():
@@ -23,6 +24,7 @@ def display_menu():
     print("5. View Providers")
     print("6. View Employees")
     print("7. Place Order")
+    print("8. Add a new product")
     print("0. Exit")
     print("-------------------")
 
@@ -87,22 +89,34 @@ def place_order(conn):
 #add new product
 def add_product(conn):
     try:
-        cursor = conn.cursor()
+       cursor = conn.cursor()
 
-        name = input("Enter the product name: ")
-        price = float(input("Enter the product price: "))
+       name = input("Enter the product name: ")
+       description = input("Enter the product description: ")
+       price = float(input("Enter the product price: "))
+       quantity = int(input("Enter the product quantity: "))
+       brand = input("Enter the product brand: ")
+       type = input("Enter the product type: ")
+       date_received = input("Enter the product received date (YYYY-MM-DD): ")
 
-        cursor.execute("INSERT INTO Product (name, price) VALUES (%s, %s)", (name, price))
-        conn.commit()
+        # Convert the input date string to a datetime object
+       datereceived = datetime.strptime(date_received, "%Y-%m-%d").date()
 
-        print(f"Product '{name}' added successfully!")
+       cursor.execute("""
+            INSERT INTO Product (name, description, price, quantity, brand, type, datereceived)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (name, description, price, quantity, brand, type, datereceived))
+        
+       conn.commit()
+
+       print(f"Product '{name}' added successfully!")
 
     except Exception as e:
         conn.rollback()
         print("Error:", e)
 
     finally:
-        cursor.close()   
+        cursor.close() 
 
 def main():
     conn = connect_to_database()
