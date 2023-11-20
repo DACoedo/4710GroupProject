@@ -84,6 +84,26 @@ def place_order(conn):
     product_id = input("Enter Product ID: ")
     quantity = int(input("Enter Quantity: "))
 
+#add new product
+def add_product(conn):
+    try:
+        cursor = conn.cursor()
+
+        name = input("Enter the product name: ")
+        price = float(input("Enter the product price: "))
+
+        cursor.execute("INSERT INTO Product (name, price) VALUES (%s, %s)", (name, price))
+        conn.commit()
+
+        print(f"Product '{name}' added successfully!")
+
+    except Exception as e:
+        conn.rollback()
+        print("Error:", e)
+
+    finally:
+        cursor.close()   
+
 def main():
     conn = connect_to_database()
 
@@ -107,7 +127,9 @@ def main():
             elif choice == "6":
                 view_employees(conn)
             elif choice == "7":
-                place_order(conn)    
+                place_order(conn)
+            elif choice == "8":  # Adding a new option for adding a product
+                add_product(conn)        
             else:
                 print("Invalid choice. Please try again.")
 
