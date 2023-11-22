@@ -82,9 +82,10 @@ def view_employees(conn):
 
 #Place order 
 def place_order(conn):
-    customer_id = input("Enter Customer ID: ")
-    product_id = input("Enter Product ID: ")
-    quantity = int(input("Enter Quantity: "))
+    while True:
+        choice = input("Enter your choice to add product to cart(0 to exit): ")
+        if choice == "0":
+                break
 
 #add new product
 def add_product(conn):
