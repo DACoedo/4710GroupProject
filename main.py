@@ -21,19 +21,20 @@ def display_menu():
     print("2. View Customers")
     print("3. View Orders")
     print("4. View Carts")
-    print("5. View Providers")
+    print("5. Add Employee")
     print("6. View Employees")
     print("7. Place Order")
     print("8. Add a new product")
     print("9. Update a product")
     print("10. Add a customer")
+    print("11. Delete product")
     print("0. Exit")
     print("-------------------")
 
 # get all products
 def view_products(conn):
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM Product")
+    cursor.execute("SELECT * FROM Product WHERE deleted=false")
     products = cursor.fetchall()
     cursor.close()
     print("Here are the products:")
@@ -77,16 +78,40 @@ def view_carts(conn):
     for cart in carts:
         print(cart)
 
-def view_providers(conn):
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM Provider")
-    providers = cursor.fetchall()
-    cursor.close()
-    for provider in providers:
-        print(provider)                
+def add_employee(conn): #Add a new employee
+    try:
+       cursor = conn.cursor()
 
-# Get all employees
-def view_employees(conn):
+       firstname = input("Enter first name: ")
+       lastname = input("Enter last name: ")
+       phone = input("Enter Phone: ")
+       email = input("Enter Email: ")
+       address = input("Enter Address: ")
+       salary = float(input("Enter Salary: "))
+       position = input("Enter Position: ")
+       datehired = input("Enter the product received date (YYYY-MM-DD): ")
+
+        # Convert the input date string to a datetime object
+       datehired = datetime.strptime(datehired, "%Y-%m-%d").date()
+
+       cursor.execute("""
+            INSERT INTO employee (firstname, lastname, phone, email, address, salary,position,datehired)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """, (firstname, lastname, phone, email, address, salary,position,datehired))
+        
+       conn.commit()
+
+       print(f"Employee '{firstname}' '{lastname}' added successfully!")
+
+    except Exception as e:
+        conn.rollback()
+        print("Error:", e)
+
+    finally:
+        cursor.close()            
+
+
+def view_employees(conn): # Display all employees
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM Employee")
     employees = cursor.fetchall()
@@ -94,8 +119,8 @@ def view_employees(conn):
     for employee in employees:
         print(employee)    
 
-#Place order 
-def place_order(conn):
+
+def place_order(conn): #Place a new order
     customer_id = int(input("Enter customer id: "))
     employee_id = int(input("Enter employee id: ")) # store employee id in order
 
@@ -109,11 +134,12 @@ def place_order(conn):
     order_id = cursor.fetchone()[0]
 
     conn.commit()
+    print("order placed")
 
     # create an order using the above with order_status set to 0
     # get order id of this newly created order
     
-    view_products(conn)
+    view_products(conn) #display all products
     while True:
         choice = input("Enter product id (0 to exit): ")
         if choice == "0":
@@ -128,8 +154,7 @@ def place_order(conn):
 
             
 
-#add new product
-def add_product(conn):
+def add_product(conn): #add a new product
     try:
        cursor = conn.cursor()
 
@@ -161,7 +186,7 @@ def add_product(conn):
         cursor.close()
 
 #update an existing product
-def update_product(conn):
+def update_product(conn): #Update an existing Product
     try:
        cursor = conn.cursor()
 
@@ -196,7 +221,7 @@ def update_product(conn):
         cursor.close()
 
 #add new customer
-def add_customer(conn):
+def add_customer(conn): #add a new customer
     try:
        cursor = conn.cursor()
 
@@ -223,7 +248,24 @@ def add_customer(conn):
     finally:
         cursor.close()
 
-def main():
+def delete_product(conn): #Delete a Product
+    view_products(conn)
+
+    product_id = input("Enter product id to delete: ")
+    
+    cursor = conn.cursor()
+    cursor.execute("""
+                   DELETE from product WHERE productid=%s
+                   """, (product_id))
+    
+    conn.commit()
+
+    print("Product successfully deleted")
+    cursor.close()
+
+
+
+def main(): #shows user the menu and  runs queries based on the input
     conn = connect_to_database()
 
     if conn:
@@ -242,17 +284,19 @@ def main():
             elif choice == "4":
                 view_carts(conn)
             elif choice == "5":
-                view_providers(conn)
+                add_employee(conn)
             elif choice == "6":
                 view_employees(conn)
             elif choice == "7":
                 place_order(conn)
-            elif choice == "8":  # Adding a new option for adding a product
+            elif choice == "8":
                 add_product(conn)
             elif choice == "9": 
                 update_product(conn)
             elif choice == "10": 
-                add_customer(conn)       
+                add_customer(conn)
+            elif choice == "11": 
+                delete_product(conn)   
             else:
                 print("Invalid choice. Please try again.")
 
