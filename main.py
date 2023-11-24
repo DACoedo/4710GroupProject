@@ -134,7 +134,7 @@ def place_order(conn): #Place a new order
     order_id = cursor.fetchone()[0]
 
     conn.commit()
-    print("order placed")
+    
 
     # create an order using the above with order_status set to 0
     # get order id of this newly created order
