@@ -25,6 +25,7 @@ def display_menu():
     print("6. View Employees")
     print("7. Place Order")
     print("8. Add a new product")
+    print("9. Update a product")
     print("0. Exit")
     print("-------------------")
 
@@ -34,6 +35,7 @@ def view_products(conn):
     cursor.execute("SELECT * FROM Product")
     products = cursor.fetchall()
     cursor.close()
+    print("Here are the products:")
     for product in products:
         print(product)
 
@@ -43,6 +45,7 @@ def view_customers(conn):
     cursor.execute("SELECT * FROM Customer")
     customers = cursor.fetchall()
     cursor.close()
+    print("Here are the customers:")
     for customer in customers:
         print(customer)
 
@@ -52,6 +55,7 @@ def view_orders(conn):
     cursor.execute("SELECT * FROM Order")
     orders = cursor.fetchall()
     cursor.close()
+    print("Here are the orders:")
     for order in orders:
         print(order)
 
@@ -117,6 +121,41 @@ def add_product(conn):
         print("Error:", e)
 
     finally:
+        cursor.close()
+
+#update an existing product
+def update_product(conn):
+    try:
+       cursor = conn.cursor()
+
+       update_id = input("Enter product id: ")
+
+       name = input("Enter new product name: ")
+       description = input("Enter new product description: ")
+       price = float(input("Enter new product price: "))
+       quantity = int(input("Enter new product quantity: "))
+       brand = input("Enter new product brand: ")
+       type = input("Enter new product type: ")
+       date_received = input("Enter new product received date (YYYY-MM-DD): ")
+
+        # Convert the input date string to a datetime object
+       datereceived = datetime.strptime(date_received, "%Y-%m-%d").date()
+
+       cursor.execute("""
+            UPDATE Product
+            SET name=%s, description=%s, price=%s, quantity=%s, brand=%s, type=%s, datereceived=%s
+            WHERE productid=%s
+        """, (name, description, price, quantity, brand, type, datereceived, update_id))
+        
+       conn.commit()
+
+       print(f"Product '{name}' updated successfully!")
+
+    except Exception as e:
+        conn.rollback()
+        print("Error:", e)
+
+    finally:
         cursor.close() 
 
 def main():
@@ -144,7 +183,9 @@ def main():
             elif choice == "7":
                 place_order(conn)
             elif choice == "8":  # Adding a new option for adding a product
-                add_product(conn)        
+                add_product(conn)
+            elif choice == "9": 
+                update_product(conn)           
             else:
                 print("Invalid choice. Please try again.")
 
