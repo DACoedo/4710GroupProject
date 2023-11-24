@@ -26,6 +26,7 @@ def display_menu():
     print("7. Place Order")
     print("8. Add a new product")
     print("9. Update a product")
+    print("10. Add a customer")
     print("0. Exit")
     print("-------------------")
 
@@ -52,12 +53,21 @@ def view_customers(conn):
 # get all orders
 def view_orders(conn):
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM Order")
+    cursor.execute("""
+                   SELECT o.orderid, o.employeeid, o.customerid, c.productid, p.name
+                   FROM orders o
+                   JOIN cart c ON o.orderid = c.orderid
+                   JOIN product p ON c.productid = p.productid
+                   """)
     orders = cursor.fetchall()
     cursor.close()
     print("Here are the orders:")
     for order in orders:
-        print(order)
+        print("orderid: " + str(order[0]) + 
+              " employeeid: " + str(order[1]) +
+              " customerid: " + str(order[2])  + 
+              " productid: " + str(order[3]) +
+              " product name: " + order[4])
 
 def view_carts(conn):
     cursor = conn.cursor()
@@ -86,10 +96,37 @@ def view_employees(conn):
 
 #Place order 
 def place_order(conn):
+    customer_id = int(input("Enter customer id: "))
+    employee_id = int(input("Enter employee id: ")) # store employee id in order
+
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO orders (customerid, employeeid, order_status)
+        VALUES (%s, %s, TRUE)
+        RETURNING orderid
+    """, (customer_id, employee_id))
+
+    order_id = cursor.fetchone()[0]
+
+    conn.commit()
+
+    # create an order using the above with order_status set to 0
+    # get order id of this newly created order
+    
+    view_products(conn)
     while True:
-        choice = input("Enter your choice to add product to cart(0 to exit): ")
+        choice = input("Enter product id (0 to exit): ")
         if choice == "0":
                 break
+        else:
+            cursor.execute("""
+                INSERT INTO cart (productid, orderid)
+                VALUES (%s, %s)
+            """, (choice, order_id))
+
+            conn.commit()
+
+            
 
 #add new product
 def add_product(conn):
@@ -156,7 +193,35 @@ def update_product(conn):
         print("Error:", e)
 
     finally:
-        cursor.close() 
+        cursor.close()
+
+#add new customer
+def add_customer(conn):
+    try:
+       cursor = conn.cursor()
+
+       firstname = input("Enter first name: ")
+       lastname = input("Enter last name: ")
+       phone = input("Enter phone: ")
+       email = input("Enter email: ")
+       address = input("Enter address: ")
+       creditcard = int(input("Enter credit card: "))
+
+       cursor.execute("""
+            INSERT INTO Customer (firstname, lastname, phone, email, address, paymentinfo)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (firstname, lastname, phone, email, address, creditcard))
+        
+       conn.commit()
+
+       print(f"Customer '{firstname}' '{lastname}' added successfully!")
+
+    except Exception as e:
+        conn.rollback()
+        print("Error:", e)
+
+    finally:
+        cursor.close()
 
 def main():
     conn = connect_to_database()
@@ -185,7 +250,9 @@ def main():
             elif choice == "8":  # Adding a new option for adding a product
                 add_product(conn)
             elif choice == "9": 
-                update_product(conn)           
+                update_product(conn)
+            elif choice == "10": 
+                add_customer(conn)       
             else:
                 print("Invalid choice. Please try again.")
 
