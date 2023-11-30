@@ -89,7 +89,7 @@ def add_employee(conn): #Add a new employee
        address = input("Enter Address: ")
        salary = float(input("Enter Salary: "))
        position = input("Enter Position: ")
-       datehired = input("Enter the product received date (YYYY-MM-DD): ")
+       datehired = input("Enter Date Hired (YYYY-MM-DD): ")
 
         # Convert the input date string to a datetime object
        datehired = datetime.strptime(datehired, "%Y-%m-%d").date()
